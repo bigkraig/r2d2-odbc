@@ -136,14 +136,13 @@ impl r2d2::ManageConnection for ODBCConnectionManager {
         Ok(ODBCConnection(env.connect_with_connection_string(&self.connection_string)?))
     }
 
-    fn is_valid(&self, _conn: &mut Self::Connection) -> std::result::Result<(), Self::Error> {
-        //TODO
-        Ok(())
+    fn is_valid(&self, conn: &mut Self::Connection) -> std::result::Result<(), Self::Error> {
+        let stmt = odbc::Statement::with_parent(&conn.0)?;
+        stmt.exec_direct("SELECT 1").map(|_| ()).map_err(|e| e.into())
     }
 
-    fn has_broken(&self, _conn: &mut Self::Connection) -> bool {
-        //TODO
-        false
+    fn has_broken(&self, conn: &mut Self::Connection) -> bool {
+        self.is_valid(conn).is_err()
     }
 }
 
@@ -161,13 +160,12 @@ impl r2d2::ManageConnection for ODBCConnectionManagerTx {
         }
     }
 
-    fn is_valid(&self, _conn: &mut Self::Connection) -> std::result::Result<(), Self::Error> {
-        //TODO
-        Ok(())
+    fn is_valid(&self, conn: &mut Self::Connection) -> std::result::Result<(), Self::Error> {
+        let stmt = odbc::Statement::with_parent(&conn.0)?;
+        stmt.exec_direct("SELECT 1").map(|_| ()).map_err(|e| e.into())
     }
 
-    fn has_broken(&self, _conn: &mut Self::Connection) -> bool {
-        //TODO
-        false
+    fn has_broken(&self, conn: &mut Self::Connection) -> bool {
+        self.is_valid(conn).is_err()
     }
 }
